@@ -1,0 +1,17 @@
+--- #YAML:1.0
+name: Cache-Repository
+version: 0.01
+author:
+  - Darin McBride - dmcbride@cpan.org
+abstract: Generic repository of files
+license: perl
+requires:
+  perl: 5.8.0
+provides:
+  Cache::Repository:
+    file: lib/Cache/Repository.pm
+    version: 0.01
+  Cache::Repository::Filesys:
+    file: lib/Cache/Repository/Filesys.pm
+    version: 0.01
+generated_by: Module::Build version 0.24
