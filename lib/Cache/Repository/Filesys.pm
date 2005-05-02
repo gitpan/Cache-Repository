@@ -2,18 +2,16 @@ package Cache::Repository::Filesys;
 
 use base 'Cache::Repository';
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use strict;
 use warnings;
 use File::Spec;
-use File::Copy;
 use File::Path;
 use File::Basename;
 use File::stat;
 use File::Find;
 use Fcntl qw(:flock);
-use Digest::MD5;
 use Carp;
 
 =head1 NAME
@@ -86,6 +84,20 @@ and meta information will all be removed.
 
 The compress option is ignored in the current version.
 
+=item dir_mapping
+
+This is a code ref which is given a tag name, and maps it to a relative
+directory that should contain the tag.  The default is to use an MD5 hash of
+the tag, and use that to create a directory hierarchy for the tag's contents.
+You can override this to, for example, provide a more-easily-debuggable
+path such as:
+
+    dir_mapping => sub {
+        my $tag = shift;
+        $tag =~ s:/:_:;
+        $tag;
+    },
+
 =back
 
 Returns: The Cache::Repository::Filesys object, or undef if the driver failed
@@ -138,13 +150,24 @@ sub _dir
 
     croak "No tag given" unless $tag;
 
-    $tag = Digest::MD5::md5_hex($tag);
-
+    my $subdir;
+    if ($self->{dir_mapping})
+    {
+        $subdir = $self->{dir_mapping}->($tag);
+    }
+    else
+    {
+        require Digest::MD5;
+        $tag = Digest::MD5::md5_hex($tag);
+        $subdir = File::Spec->catdir(
+                                     substr($tag,0,2),
+                                     substr($tag,2,2),
+                                     $tag
+                                    );
+    }
     File::Spec->catdir(
                        $self->{path},
-                       substr($tag,0,2),
-                       substr($tag,2,2),
-                       $tag
+                       $subdir,
                       );
 }
 
@@ -155,7 +178,16 @@ sub _add_file
     my $self = shift;
     my %opts = @_;
 
-    $self->{r}{$opts{tag}}{$opts{filename}} = undef;
+    #$self->{r}{$opts{tag}}{$opts{filename}} = undef;
+    $self->set_meta(tag => '_r',
+                    meta => { 
+                        $opts{tag} => {
+                            $opts{filename} => {
+                                dir => $self->_dir(%opts),
+                            },
+                        },
+                    },
+                   );
 }
 
 sub _remove_tag
@@ -163,7 +195,11 @@ sub _remove_tag
     my $self = shift;
     my %opts = @_;
 
-    delete $self->{r}{$opts{tag}};
+    my $data = $self->get_meta(tag => '_r');
+    delete $data->{$opts{tag}};
+    $self->set_meta(tag => '_r',
+                    reset => 1,
+                    meta => $data);
 }
 
 sub _lock_meta
@@ -318,7 +354,21 @@ sub add_filehandle
     my $dstfile = File::Spec->catdir($dir, $opts{filename});
 
     mkpath(dirname($dstfile));
-    my $rc = copy($opts{filehandle}, $dstfile);
+    #my $rc = copy($opts{filehandle}, $dstfile);
+    my $rc = 0;
+    {
+        local $/ = \32768;
+        local $_;
+
+        if (open my $dst_h, '>', $dstfile)
+        {
+            binmode $dst_h;
+            my $in_h = $opts{filehandle};
+            print $dst_h $_ while <$in_h>;
+            $rc = 1;
+        }
+    }
+
     chmod $opts{mode}, $dstfile if exists $opts{mode};
     chown $opts{owner}, $opts{group}, $dstfile
         if exists $opts{owner} and exists $opts{group};
@@ -362,7 +412,7 @@ sub retrieve_with_callback
                        owner => $s->uid(),
                        group => $s->gid(),
                        filename => $file,
-                       first => 1,
+                       start => 1,
                       );
         if (-l $srcname)
         {
@@ -377,7 +427,7 @@ sub retrieve_with_callback
             while (my $r = sysread($fh, $buf, 64 * 1024))
             {
                 $callback->(%cb_opts, data => $buf) or return 0;
-                delete $cb_opts{first};
+                delete $cb_opts{start};
             }
             $buf = undef;
             $callback->(%cb_opts, data => undef, end => 1) or return 0;
@@ -470,7 +520,8 @@ sub list_tags
     my $self = shift;
     my %opts = @_;
 
-    my @t = keys %{$self->{r}};
+    my $r = $self->get_meta(tag=>'_r');
+    my @t = keys %$r;
     wantarray ? @t : \@t;
 }
 

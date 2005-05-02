@@ -2,3 +2,11 @@ Revision history for Cache::Repository
 
 0.01
 	* Initial revision
+
+0.02
+	! Removed dependancy on File::Copy inside Cache::Repository::Filesys
+          File::Copy::copy cannot handle copying from string GLOBs such that
+          C<open my $fh, '<', \$buffer> would give you a filehandle that could
+          be used to create a file in the repository.
+        ! Cleaned up retrieval code
+        + Added dir_mapping to C::R::Filesys

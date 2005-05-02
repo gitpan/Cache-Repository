@@ -1,6 +1,6 @@
 package Cache::Repository;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use strict;
 use warnings;
@@ -214,6 +214,8 @@ Filename that is the symlink
 
 The target that the symlink points at.  The target need not actually exist -
 dangling symlinks should work fine.
+
+=back
 
 =cut
 
@@ -480,7 +482,7 @@ are both the same.
 sub retrieve
 {
     my $self = shift;
-    my %opts = shift;
+    my %opts = @_;
 
     my $rc = 1;
     my $fh = undef;
@@ -506,8 +508,13 @@ sub retrieve
 
         if ($cb_opts{start})
         {
+            require File::Path;
+            require File::Basename;
+
             $filename = File::Spec->catfile($opts{basedir},$cb_opts{filename});
-            $fh = IO::File->open($filename, "w") or do {
+            File::Path::mkpath(File::Basename::dirname($filename));
+
+            $fh = IO::File->new($filename, "w") or do {
                 warn "Can't write to $filename: $!";
                 $rc = 0;
                 return 0;
@@ -609,7 +616,9 @@ sub retrieve_as_hash
 
         if ($cb_opts{start})
         {
-            my %h = @cb_opts{qw[mode owner group]};
+            my @keys = qw[mode owner group];
+            my %h;
+            @h{@keys} = @cb_opts{@keys};
             $hash->{$cb_opts{filename}} = \%h;
         }
 

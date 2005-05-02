@@ -43,6 +43,29 @@ $rc =
                    );
 ok($rc);
 
+
+my $buffer = 'some
+    large
+    test
+' x 100;
+{
+    open my $fh, '<', \$buffer;
+
+    $rc =
+        $obj->add_filehandle(
+                             tag => 'string_test',
+                             filehandle => $fh,
+                             filename => 'large.txt',
+                            );
+    ok($rc);
+}
+
+{
+    my $hash = $obj->retrieve_as_hash(tag => 'string_test');
+    ok(keys %$hash == 1);
+    ok($hash->{'large.txt'}{data} eq $buffer);
+}
+
 $obj->set_meta(tag => 'test',
                meta => {
                    name => 'test tag',
@@ -94,7 +117,7 @@ ok(($size >= 2 * (-s $0)) and ($size <= 2 * (1024 + -s $0))) or
 
 my @tags = $obj->list_tags();
 ok(@tags);
-ok(@tags == 1);
+ok(@tags == 2);
 is($tags[0], 'test');
 
 1;
