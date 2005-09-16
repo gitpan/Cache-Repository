@@ -1,6 +1,6 @@
 package Cache::Repository;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use strict;
 use warnings;
@@ -477,6 +477,8 @@ are both the same.
 
 =back
 
+Returns undef if the tag doesn't exist, or 0 for any other retrieval error.
+
 =cut
 
 sub retrieve
@@ -535,10 +537,10 @@ sub retrieve
         1;
     };
 
-    $self->retrieve_with_callback(
-                                  %opts,
-                                  callback => $callback,
-                                 );
+    return undef unless $self->retrieve_with_callback(
+                                                      %opts,
+                                                      callback => $callback,
+                                                     );
 
     $rc;
 }
@@ -626,10 +628,10 @@ sub retrieve_as_hash
         1;
     };
 
-    $self->retrieve_with_callback(
-                                  %opts,
-                                  callback => $callback,
-                                 );
+    return undef unless $self->retrieve_with_callback(
+                                                      %opts,
+                                                      callback => $callback,
+                                                     );
 
     $hash;
 
@@ -715,6 +717,8 @@ or
 are both the same.
 
 =back
+
+Returns undef if the tag doesn't exist.
 
 =cut
 

@@ -2,7 +2,7 @@ package Cache::Repository::Filesys;
 
 use base 'Cache::Repository';
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use strict;
 use warnings;
@@ -391,6 +391,9 @@ sub retrieve_with_callback
     my $callback = $opts{callback};
     my @files_to_extract;
 
+    my $repos_dir = $self->_dir($opts{tag});
+    return undef unless -d $repos_dir;
+
     if (exists $opts{files})
     {
         @files_to_extract = ref $opts{files} ? @{$opts{files}} : ($opts{files});
@@ -402,7 +405,7 @@ sub retrieve_with_callback
 
     foreach my $file (@files_to_extract)
     {
-        my $srcname = File::Spec->catfile($self->_dir($opts{tag}), $file);
+        my $srcname = File::Spec->catfile($repos_dir, $file);
         my $s = stat($srcname);
 
         return 0 unless $s;
@@ -424,7 +427,7 @@ sub retrieve_with_callback
             binmode $fh;
 
             my $buf;
-            while (my $r = sysread($fh, $buf, 64 * 1024))
+            while (my $r = sysread($fh, $buf, 32 * 1024))
             {
                 $callback->(%cb_opts, data => $buf) or return 0;
                 delete $cb_opts{start};
@@ -444,6 +447,9 @@ sub get_size
 {
     my $self = shift;
     my %opts = @_;
+
+    my $repos_dir = $self->_dir($opts{tag});
+    return 0 unless -d $repos_dir;
 
     my @files;
 
@@ -466,9 +472,9 @@ sub get_size
         {
             $s = 1024;
         }
-        else 
+        else
         {
-            $s = -s $fullname;
+            $s = -s _;
             if ($s % 1024)
             {
                 $s -= $s % 1024;
@@ -505,7 +511,7 @@ sub list_files
              no_chdir => 1,
          },
          $dir
-        );
+        ) if -d $dir;
     wantarray ? @files : \@files;
 }
 

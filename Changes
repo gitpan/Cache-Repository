@@ -10,3 +10,6 @@ Revision history for Cache::Repository
           be used to create a file in the repository.
         ! Cleaned up retrieval code
         + Added dir_mapping to C::R::Filesys
+
+0.03
+        + Added checking for retrieval of non-existant tags.
