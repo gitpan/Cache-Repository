@@ -1,17 +1,25 @@
---- #YAML:1.0
+---
 name: Cache-Repository
-version: 0.03
+version: 0.04
 author:
-  - Darin McBride - dmcbride@cpan.org
+  - 'Darin McBride - dmcbride@cpan.org'
 abstract: Generic repository of files
 license: perl
+resources:
+  license: http://dev.perl.org/licenses/
 requires:
+  Filesys::DiskUsage: 0.04
   perl: 5.8.0
+recommends:
+  Filesys::Statvfs: 0
 provides:
   Cache::Repository:
     file: lib/Cache/Repository.pm
-    version: 0.03
+    version: 0.04
   Cache::Repository::Filesys:
     file: lib/Cache/Repository/Filesys.pm
-    version: 0.03
-generated_by: Module::Build version 0.24
+    version: 0.04
+generated_by: Module::Build version 0.28
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2

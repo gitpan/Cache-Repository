@@ -13,3 +13,9 @@ Revision history for Cache::Repository
 
 0.03
         + Added checking for retrieval of non-existant tags.
+
+0.04
+        + Replaced the disk-usage code with a call to Filesys::DiskUsage
+          which has been updated specifically for this type of use.
+        * Improved Kwalitee by adding pod tests
+

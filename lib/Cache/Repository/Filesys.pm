@@ -2,7 +2,7 @@ package Cache::Repository::Filesys;
 
 use base 'Cache::Repository';
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use strict;
 use warnings;
@@ -98,6 +98,17 @@ path such as:
         $tag;
     },
 
+=item sector_size
+
+=item symlink_size
+
+Options for L<Filesys::DiskUsage>.  Defaults to the blocksize of the
+directory holding the repository if L<Filesys::Statvfs> is installed,
+or just simply 1024 if L<Filesys::Statvfs> is not installed.
+
+Use 1 to get exact numbers for total file size, but this is rarely what
+you really want (unless you're planning to put it in a tarball).
+
 =back
 
 Returns: The Cache::Repository::Filesys object, or undef if the driver failed
@@ -114,6 +125,20 @@ sub new
     my $self = \%opts;
     bless $self, $class;
 
+    if (exists $self->{sector_size} and $self->{sector_size} < 1)
+    {
+        require Carp;
+        croak "sector_size must be > 0";
+    }
+    if (exists $self->{symlink_size} and $self->{symlink_size} < 1)
+    {
+        require Carp;
+        croak "symlink_size must be > 0";
+    }
+
+    $self->{sector_size}  ||= $self->_default_blocksize();
+    $self->{symlink_size} ||= $self->_default_blocksize();
+
     if (delete $self->{clear})
     {
         $self->_clear_repository();
@@ -121,7 +146,21 @@ sub new
     $self;
 }
 
-sub _clear_repository()
+my $_has_statvfs = -1;
+sub _default_blocksize
+{
+    my $self = shift;
+    eval {
+        require Filesys::Statvfs;
+        $_has_statvfs = 1;
+        my ($bsize) = Filesys::Statvfs::statvfs($self->{path});
+        return $bsize;
+    } if $_has_statvfs;
+    $_has_statvfs = 0;
+    1024;
+}
+
+sub _clear_repository
 {
     my $self = shift;
     my $path = $self->{path};
@@ -268,6 +307,12 @@ sub _freeze
     join '', Data::Dumper::Dumper($data);
 }
 
+=item get_meta
+
+Overrides L<Cache::Repository>'s get_meta function
+
+=cut
+
 sub get_meta
 {
     my $self = shift;
@@ -280,6 +325,12 @@ sub get_meta
     }
     $self->{meta}{$opts{tag}};
 }
+
+=item set_meta
+
+Overrides L<Cache::Repository>'s set_meta function
+
+=cut
 
 sub set_meta
 {

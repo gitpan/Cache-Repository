@@ -34,6 +34,10 @@ my $build = $class->new
      license => 'perl',
      requires => {
          perl => '5.8.0',
+         'Filesys::DiskUsage' => '0.04',
+     },
+     recommends => {
+         'Filesys::Statvfs' => 0,
      },
     );
 
