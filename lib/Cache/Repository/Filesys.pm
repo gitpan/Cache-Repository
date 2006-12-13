@@ -304,6 +304,7 @@ sub _freeze
     my $data = shift;
     require Data::Dumper;
     local $Data::Dumper::Indent = 0;
+    local $Data::Dumper::Purity = 1;
     join '', Data::Dumper::Dumper($data);
 }
 

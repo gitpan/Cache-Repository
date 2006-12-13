@@ -1,6 +1,6 @@
 package Cache::Repository;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use strict;
 use warnings;
@@ -941,7 +941,7 @@ Darin McBride - dmcbride@cpan.org
 
 =head1 COPYRIGHT
 
-Copyright 2005 Darin McBride.
+Copyright 2006 Darin McBride.
 
 You may distribute under the terms of either the GNU General Public
 License or the Artistic License, as specified in the Perl README file.
@@ -949,6 +949,10 @@ License or the Artistic License, as specified in the Perl README file.
 =head1 BUGS
 
 See TODO file.
+
+=head1 SEE ALSO
+
+L<http://www.perlmonks.org/index.pl?node_id=589209>
 
 =cut
 

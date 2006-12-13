@@ -19,3 +19,5 @@ Revision history for Cache::Repository
           which has been updated specifically for this type of use.
         * Improved Kwalitee by adding pod tests
 
+0.05
+        * Added SEE ALSO section.  See that section on why.
