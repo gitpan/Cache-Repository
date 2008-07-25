@@ -1,6 +1,6 @@
 ---
 name: Cache-Repository
-version: 0.05
+version: 0.06
 author:
   - 'Darin McBride - dmcbride@cpan.org'
 abstract: Generic repository of files
@@ -15,11 +15,11 @@ recommends:
 provides:
   Cache::Repository:
     file: lib/Cache/Repository.pm
-    version: 0.05
+    version: 0.06
   Cache::Repository::Filesys:
     file: lib/Cache/Repository/Filesys.pm
     version: 0.04
-generated_by: Module::Build version 0.28
+generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
   version: 1.2

@@ -21,3 +21,6 @@ Revision history for Cache::Repository
 
 0.05
         * Added SEE ALSO section.  See that section on why.
+
+0.06
+        * Added pod tests (CPANTS game)
